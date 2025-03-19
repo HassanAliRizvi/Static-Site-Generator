@@ -87,7 +87,7 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
 
 # regex to splut images and links
 def extract_markdown_images(text):
-	matches = re.findall(r"\!\[(\w+)\]\((.*?)\)",text)
+	matches = re.findall(r"\!\[(.*?)\]\((.*?)\)",text)
 	return matches
 
 
@@ -95,17 +95,8 @@ def extract_markdown_links(text):
 	matches = re.findall(r"\[(.*?)\]\((.*?)\)",text)
 	return matches
 
-"""
 
-Functions TO DO
 def split_nodes_image(old_nodes):
-
-	#Basically, split the nodes and like do the following
-
-	#find_pattern = str.find(delimiter) 
-	#string[find_pattern:len(find_pattern)+1]
-
-	
 	res = []
 	for node in old_nodes:
 		if TextType.TEXT != node.text_type:
@@ -113,30 +104,27 @@ def split_nodes_image(old_nodes):
 			continue
 
 		#copy of the text value from node
-		
 		text = node.text
 
-		opening_delimiter = text.find(delimiter)
-		if opening_delimiter == -1:
+		matches = extract_markdown_images(text)
+		if not matches:
 			res.append(node) 
 			continue
+
+		for match in matches:
+			image_alt, image_url = match
 		
-		closing_delimeter = text.find(delimiter,opening_delimiter+len(delimiter))
-		if closing_delimeter == -1:
-			raise Exception("Invalid markdown")
-		
+			sections = text.split(f"![{image_alt}]({image_url})", 1)
+			
+			res.append(TextNode(sections[0],TextType.TEXT))
+			
+			res.append(TextNode(image_alt,TextType.IMAGE,image_url))
 
-
-		# two parts
-		text_before_delim = text[:opening_delimiter]
-		delimiter_text = text[opening_delimiter+len(delimiter):closing_delimeter]
-		text_after_delim = text[closing_delimeter + len(delimiter):]
-
-		res.append(TextNode(text_before_delim,TextType.TEXT))
-		res.append(TextNode(delimiter_text,text_type))
-		res.append(TextNode(text_after_delim,TextType.TEXT))
-
+			text = sections[1]
+			
+	
 	return res
+
 
 def split_nodes_link(old_nodes):
 	res = []
@@ -146,35 +134,48 @@ def split_nodes_link(old_nodes):
 			continue
 
 		#copy of the text value from node
-		
 		text = node.text
 
-		opening_delimiter = text.find(delimiter)
-		if opening_delimiter == -1:
+		matches = extract_markdown_links(text)
+		if not matches:
 			res.append(node) 
 			continue
+
+		for match in matches:
+			link_alt, url = match
+	
+			sections = text.split(f"[{link_alt}]({url})", 1)
+			res.append(TextNode(sections[0],TextType.TEXT))
+			
+			res.append(TextNode(link_alt,TextType.LINK,url))
+
+			text = sections[1]
 		
-		closing_delimeter = text.find(delimiter,opening_delimiter+len(delimiter))
-		if closing_delimeter == -1:
-			raise Exception("Invalid markdown")
-		
-
-
-		# two parts
-		text_before_delim = text[:opening_delimiter]
-		delimiter_text = text[opening_delimiter+len(delimiter):closing_delimeter]
-		text_after_delim = text[closing_delimeter + len(delimiter):]
-
-		res.append(TextNode(text_before_delim,TextType.TEXT))
-		res.append(TextNode(delimiter_text,text_type))
-		res.append(TextNode(text_after_delim,TextType.TEXT))
-
+	
 	return res
 
 
+def text_to_textnodes(text):
+	split_image = split_nodes_image(text)
+	split_links = split_nodes_link(node for node in split_image if node.text_type == TextType.TEXT)
+	processed_nodes = [node.text for node in split_links if node.text_type == TextType.TEXT]
+	remaining_text = " ".join(processed_nodes)  # Start with the full input
+
+	# Process bold text first
+	bold_nodes = split_nodes_delimiter(remaining_text, "**")
+
+	# Process remaining text for italics
+	italic_nodes = split_nodes_delimiter("".join([node.content for node in bold_nodes if node.type == TextType.TEXT]), "_")
+
+	# Combine results
+	res = []
+	res.extend(bold_nodes)  # Add all bold nodes
+	res.extend(italic_nodes)  # Add all italic nodes
+	res.extend(split_image)  # Add all bold nodes
+	res.extend(split_links)  # Add all italic nodes
 
 
 
 
 
-"""
+
