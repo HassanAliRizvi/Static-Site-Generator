@@ -99,7 +99,7 @@ def extract_markdown_links(text):
 def split_nodes_image(old_nodes):
 	res = []
 	for node in old_nodes:
-		if TextType.TEXT != node.text_type:
+		if node.text_type != TextType.TEXT:
 			res.append(node)
 			continue
 
@@ -113,23 +113,24 @@ def split_nodes_image(old_nodes):
 
 		for match in matches:
 			image_alt, image_url = match
+			res.append(TextNode(image_alt,TextType.IMAGE,image_url))
 		
 			sections = text.split(f"![{image_alt}]({image_url})", 1)
-			
-			res.append(TextNode(sections[0],TextType.TEXT))
-			
-			res.append(TextNode(image_alt,TextType.IMAGE,image_url))
 
-			text = sections[1]
 			
-	
+			for section in sections:
+			
+				res.append(TextNode(section,TextType.TEXT))
+
+			#text = sections[1]
+			
+	print(res)
 	return res
-
 
 def split_nodes_link(old_nodes):
 	res = []
 	for node in old_nodes:
-		if TextType.TEXT != node.text_type:
+		if node.text_type != TextType.TEXT:
 			res.append(node)
 			continue
 
@@ -143,36 +144,39 @@ def split_nodes_link(old_nodes):
 
 		for match in matches:
 			link_alt, url = match
+
+			res.append(TextNode(link_alt,TextType.LINK,url))
 	
 			sections = text.split(f"[{link_alt}]({url})", 1)
-			res.append(TextNode(sections[0],TextType.TEXT))
 			
-			res.append(TextNode(link_alt,TextType.LINK,url))
+			for section in sections:
+			
+				res.append(TextNode(section,TextType.TEXT))
+		
 
-			text = sections[1]
+			#text = sections[1]
 		
 	
 	return res
 
 
 def text_to_textnodes(text):
-	split_image = split_nodes_image(text)
-	split_links = split_nodes_link(node for node in split_image if node.text_type == TextType.TEXT)
-	processed_nodes = [node.text for node in split_links if node.text_type == TextType.TEXT]
-	remaining_text = " ".join(processed_nodes)  # Start with the full input
+	# Start with a single node
+	nodes = [TextNode(text, TextType.TEXT)]
 
-	# Process bold text first
-	bold_nodes = split_nodes_delimiter(remaining_text, "**")
+	# Process through each splitting function in sequence
+	nodes = split_nodes_link(nodes)
+	nodes = split_nodes_image(nodes)	
+	nodes = split_nodes_delimitser(nodes, "**", TextType.BOLD)
+	nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+	nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+	# Debug - print the nodes to see what's happening
+	for i, node in enumerate(nodes):
+		print(f"Node {i}: {node.text} ({node.text_type})")
+	# Remove any empty text nodes
+	nodes = [node for node in nodes if node.text != "" or node.text != " "]
 
-	# Process remaining text for italics
-	italic_nodes = split_nodes_delimiter("".join([node.content for node in bold_nodes if node.type == TextType.TEXT]), "_")
-
-	# Combine results
-	res = []
-	res.extend(bold_nodes)  # Add all bold nodes
-	res.extend(italic_nodes)  # Add all italic nodes
-	res.extend(split_image)  # Add all bold nodes
-	res.extend(split_links)  # Add all italic nodes
+	return nodes
 
 
 

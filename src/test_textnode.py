@@ -4,26 +4,32 @@ from textnode import TextNode, TextType, split_nodes_delimiter,extract_markdown_
 
 
 class TestTextNode(unittest.TestCase):
+    
     def test_eq(self):
         node = TextNode("This is a text node", TextType.BOLD)
         node2 = TextNode("This is a text node", TextType.BOLD)
         self.assertEqual(node, node2)
+    
     def test_url(self):
         node = TextNode("This is a text node", TextType.BOLD)
         self.assertEqual(node.url,None)
+    
     def test_not_eq(self):
         node = TextNode("This is a text node", TextType.ITALIC)
         node2 = TextNode("This is a text node", TextType.BOLD)
         self.assertNotEqual(node,node2)
+    
     def test_text(self):
         node = TextNode("This is a text node", TextType.BOLD)
         node2 = TextNode("This is a text node", TextType.BOLD)
         self.assertEqual(node.text, node2.text)
+    
     def test_text(self):
         node = TextNode("This is a text node", TextType.TEXT)
         html_node = node.text_node_to_html_node(node)
         self.assertEqual(html_node.tag, None)
         self.assertEqual(html_node.value, "This is a text node")
+    
     def text_delimiter(self):
         node = TextNode("This is text with a `code block` word", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
@@ -93,6 +99,7 @@ class TestTextNode(unittest.TestCase):
             new_nodes,
         )
     
+    
     def test_text_to_textnodes(self):
         text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
         res = [
@@ -105,9 +112,8 @@ class TestTextNode(unittest.TestCase):
             TextNode(" and an ", TextType.TEXT),
             TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
             TextNode(" and a ", TextType.TEXT),
-            TextNode("link", TextType.LINK, "https://boot.dev"),
-        ]
+            TextNode("link", TextType.LINK, "https://boot.dev"),]
         self.assertListEqual(res,text_to_textnodes(text))
-
+    
     if __name__ == "__main__":
         unittest.main()
