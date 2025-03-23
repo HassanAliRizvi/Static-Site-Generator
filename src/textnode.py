@@ -112,19 +112,22 @@ def split_nodes_image(old_nodes):
 			continue
 
 		for match in matches:
-			image_alt, image_url = match
-			res.append(TextNode(image_alt,TextType.IMAGE,image_url))
-		
-			sections = text.split(f"![{image_alt}]({image_url})", 1)
+			image_alt, url = match
+			new_text = text
+
+			sections = new_text.split(f"![{image_alt}]({url})", 1) # [This, another ![]()]
+			#print(sections)
+
+			if len(sections)>1:
+				text = sections[1]
+				print(new_text)
 
 			
-			for section in sections:
-			
-				res.append(TextNode(section,TextType.TEXT))
+			res.append(TextNode(sections[0],TextType.TEXT))
+			res.append(TextNode(image_alt,TextType.IMAGE,url))
 
-			#text = sections[1]
-			
-	print(res)
+				
+	#print(res)
 	return res
 
 def split_nodes_link(old_nodes):
@@ -144,20 +147,22 @@ def split_nodes_link(old_nodes):
 
 		for match in matches:
 			link_alt, url = match
+			new_text = text
 
+			sections = new_text.split(f"[{link_alt}]({url})", 1) # [This, another ![]()]
+			print(sections)
+
+			if len(sections)>1:
+				text = sections[1]
+				print(new_text)
+
+			
+			res.append(TextNode(sections[0],TextType.TEXT))
 			res.append(TextNode(link_alt,TextType.LINK,url))
 	
-			sections = text.split(f"[{link_alt}]({url})", 1)
-			
-			for section in sections:
-			
-				res.append(TextNode(section,TextType.TEXT))
-		
-
-			#text = sections[1]
-		
-	
+	print(res)
 	return res
+		
 
 
 def text_to_textnodes(text):
@@ -165,16 +170,16 @@ def text_to_textnodes(text):
 	nodes = [TextNode(text, TextType.TEXT)]
 
 	# Process through each splitting function in sequence
-	nodes = split_nodes_link(nodes)
-	nodes = split_nodes_image(nodes)	
-	nodes = split_nodes_delimitser(nodes, "**", TextType.BOLD)
+	nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
 	nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
 	nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+	nodes = split_nodes_image(nodes)
+	nodes = split_nodes_link(nodes)	
 	# Debug - print the nodes to see what's happening
 	for i, node in enumerate(nodes):
 		print(f"Node {i}: {node.text} ({node.text_type})")
 	# Remove any empty text nodes
-	nodes = [node for node in nodes if node.text != "" or node.text != " "]
+	nodes = [node for node in nodes if node.text != "" and node.text != " "]
 
 	return nodes
 
