@@ -122,9 +122,13 @@ def split_nodes_image(old_nodes):
 				text = sections[1]
 				print(new_text)
 
-			
-			res.append(TextNode(sections[0],TextType.TEXT))
+			if sections[0]:
+				res.append(TextNode(sections[0], TextType.TEXT))
+			#res.append(TextNode(sections[0],TextType.TEXT))
 			res.append(TextNode(image_alt,TextType.IMAGE,url))
+		# After the for loop in both functions
+		if text:  # If there's any text remaining
+			res.append(TextNode(text, TextType.TEXT))
 
 				
 	#print(res)
@@ -150,7 +154,7 @@ def split_nodes_link(old_nodes):
 			new_text = text
 
 			sections = new_text.split(f"[{link_alt}]({url})", 1) # [This, another ![]()]
-			print(sections)
+			#print(sections)
 
 			if len(sections)>1:
 				text = sections[1]
@@ -170,18 +174,36 @@ def text_to_textnodes(text):
 	nodes = [TextNode(text, TextType.TEXT)]
 
 	# Process through each splitting function in sequence
-	nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
-	nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
-	nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
-	nodes = split_nodes_image(nodes)
-	nodes = split_nodes_link(nodes)	
+	nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD) # []
+	nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC) # []
+	nodes = split_nodes_delimiter(nodes, "`", TextType.CODE) # []
+	nodes = split_nodes_image(nodes) # []
+	nodes = split_nodes_link(nodes) # []
+	
 	# Debug - print the nodes to see what's happening
 	for i, node in enumerate(nodes):
 		print(f"Node {i}: {node.text} ({node.text_type})")
 	# Remove any empty text nodes
 	nodes = [node for node in nodes if node.text != "" and node.text != " "]
 
+	print(nodes)
 	return nodes
+
+def markdown_to_blocks(markdown):
+	#print(markdown)
+	split_markdown = markdown.split("\n\n")
+	items = []
+	res = []
+	for word in split_markdown:
+		word_strip = word.strip()
+		print(word_strip)
+		res.append(word_strip)
+
+	#print(type(split_markdown))
+	print(res)
+	
+	return res
+
 
 
 
