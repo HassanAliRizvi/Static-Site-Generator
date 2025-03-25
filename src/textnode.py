@@ -190,20 +190,22 @@ def text_to_textnodes(text):
 	return nodes
 
 def markdown_to_blocks(markdown):
-	#print(markdown)
+    
 	split_markdown = markdown.split("\n\n")
-	items = []
+
 	res = []
-	for word in split_markdown:
-		word_strip = word.strip()
-		print(word_strip)
-		res.append(word_strip)
-
-	#print(type(split_markdown))
+	for blocks in split_markdown:
+		blocks_strip = blocks.strip()
+		if blocks_strip:
+			# Now handle any indentation on individual lines
+			lines = blocks_strip.split("\n")
+			print(lines)
+			# Strip each line and join them back with newlines
+			cleaned_block = "\n".join(line.strip() for line in lines)
+			res.append(cleaned_block)
 	print(res)
-	
 	return res
-
+		
 
 
 
