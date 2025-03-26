@@ -21,8 +21,16 @@ def main():
         - This is a list
         - with items
     """
-    markdown_to_blocks(md)
-
+    #markdown_to_blocks(md)
+    md2 = """
+        1. One 
+        2. Two
+        3. Three
+        
+        """
+    md3 = "1. One\n2. Two\n3. Three"
+    blocks = block_to_block_type(md3)
+    print(blocks)
 
 
 if __name__ == "__main__":

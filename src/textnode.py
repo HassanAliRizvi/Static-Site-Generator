@@ -2,6 +2,15 @@ from enum import Enum
 from htmlnode import *
 import re
 
+class BlockType(Enum):
+	PARAGRAPH = "paragraph"
+	HEADING = "heading"
+	QUOTE = "quote"
+	CODE = "code"
+	UNORDERED_LIST = "unordered_list"  # for links like [anchor text](url)
+	ORDERED_LIST = "ordered_list"  # for images like ![alt text](url)
+
+
 class TextType(Enum):
 	TEXT = "text"
 	BOLD = "bold"
@@ -9,6 +18,7 @@ class TextType(Enum):
 	CODE = "code"
 	LINK = "link"  # for links like [anchor text](url)
 	IMAGE = "image"  # for images like ![alt text](url)
+
 
 class TextNode():
 	def __init__(self,text,text_type,url=None):
@@ -164,7 +174,7 @@ def split_nodes_link(old_nodes):
 			res.append(TextNode(sections[0],TextType.TEXT))
 			res.append(TextNode(link_alt,TextType.LINK,url))
 	
-	print(res)
+	#print(res)
 	return res
 		
 
@@ -180,13 +190,11 @@ def text_to_textnodes(text):
 	nodes = split_nodes_image(nodes) # []
 	nodes = split_nodes_link(nodes) # []
 	
-	# Debug - print the nodes to see what's happening
-	for i, node in enumerate(nodes):
-		print(f"Node {i}: {node.text} ({node.text_type})")
+
 	# Remove any empty text nodes
 	nodes = [node for node in nodes if node.text != "" and node.text != " "]
 
-	print(nodes)
+	#print(nodes)
 	return nodes
 
 def markdown_to_blocks(markdown):
@@ -199,15 +207,50 @@ def markdown_to_blocks(markdown):
 		if blocks_strip:
 			# Now handle any indentation on individual lines
 			lines = blocks_strip.split("\n")
-			print(lines)
 			# Strip each line and join them back with newlines
 			cleaned_block = "\n".join(line.strip() for line in lines)
 			res.append(cleaned_block)
-	print(res)
+	#print(res)
 	return res
 		
 
+def block_to_block_type(markdown):
+	#regex for the possible markdowns
+	#paragraph = re.findall(r'\#(6)\s\w+',markdown)
+	heading = re.findall(r'(#{1,6}) (.*)',markdown)
+	code = re.findall(r'(\`{3}(.*)\`{3})',markdown)
+	quote = re.findall(r'(> (.*))',markdown)
+	ordered_list = re.findall(r'\d\.',markdown)
+	unordered_list = re.findall(r'(- (.*))',markdown)
 
+	split_lines = markdown.split("\n") #1. hello 2.hello
+
+	if ordered_list:
+		for i, line in enumerate(split_lines):
+			number_regex = re.match(r'(\d)\.',line)
+			if not number_regex or int(number_regex.group(1)) != i+1:
+				return BlockType.PARAGRAPH
+
+		return BlockType.ORDERED_LIST
+
+	elif heading:
+		return BlockType.HEADING
+
+	elif quote:
+		return BlockType.QUOTE
+	
+	elif code:
+		return BlockType.CODE
+	
+	elif unordered_list:
+		for str in split_lines:
+			number_regex = re.findall(r'(- (.*))',str)
+			if not number_regex:
+				return False
+		return BlockType.UNORDERED_LIST
+
+	else:
+		return BlockType.PARAGRAPH
 
 
 

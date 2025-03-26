@@ -115,24 +115,54 @@ class TestTextNode(unittest.TestCase):
         self.assertListEqual(res,text_to_textnodes(text))
     
     def test_markdown_to_blocks(self):
-        md = """
-    This is **bolded** paragraph
+            md = """
+        This is **bolded** paragraph
 
-    This is another paragraph with _italic_ text and `code` here
-    This is the same paragraph on a new line
+        This is another paragraph with _italic_ text and `code` here
+        This is the same paragraph on a new line
 
-    - This is a list
-    - with items
-    """
-        blocks = markdown_to_blocks(md)
-        self.assertEqual(
-            blocks,
-            [
-                "This is **bolded** paragraph",
-                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
-                "- This is a list\n- with items",
-            ],
-        )
+        - This is a list
+        - with items
+        """
+            blocks = markdown_to_blocks(md)
+            self.assertEqual(
+                blocks,
+                [
+                    "This is **bolded** paragraph",
+                    "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                    "- This is a list\n- with items",
+                ],
+            )
     
-    if __name__ == "__main__":
-        unittest.main()
+    def test_block_to_block_heading(self):
+        md = "## This is markdown"
+        blocks = block_to_block_type(md)
+        self.assertEqual(blocks, BlockType.HEADING)
+
+    def test_block_to_block_code(self):
+        md = "```This is code```"
+        blocks = block_to_block_type(md)
+        self.assertEqual(blocks, BlockType.CODE)
+
+    def test_block_to_block_quote(self):
+        md = "> This is quote"
+        blocks = block_to_block_type(md)
+        self.assertEqual(blocks, BlockType.QUOTE)
+
+    def test_block_to_block_ordered_list(self):
+        md = "1. One\n2. Two\n3. Three"
+        blocks = block_to_block_type(md)
+        self.assertEqual(blocks, BlockType.ORDERED_LIST)
+
+    def test_block_to_block_unordered_list(self):
+        md = "- First item\n- Second item\n- Third item"
+        blocks = block_to_block_type(md)
+        self.assertEqual(blocks, BlockType.UNORDERED_LIST)
+    
+    def test_paragraph(self):
+        md = "HI! hello"
+        blocks = block_to_block_type(md)
+        self.assertEqual(blocks, BlockType.PARAGRAPH)
+    
+if __name__ == "__main__":
+    unittest.main()
