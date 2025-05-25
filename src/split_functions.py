@@ -1,5 +1,7 @@
 from textnode import TextNode
 from textnode import TextType
+from htmlnode import HTMLNode, ParentNode, LeafNode
+from htmlnode import text_node_to_html_node
 import re
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
@@ -120,6 +122,7 @@ def split_nodes_link(old_nodes):
         
     return res
 
+#used for bold, italic, underline etc
 def text_to_textnodes(nodes):
     nodes_list = [nodes]
     nodes = split_nodes_image(nodes_list)
@@ -205,45 +208,103 @@ def block_to_block_type(markdown_text):
     return BlockType.paragraph    
 
 def markdown_to_html_node(markdown):
-    blocks = markdown_to_blocks(markdown)
-    block_type = block_to_block_type(markdown)
-
-    if block_type == BlockType.paragraph:
-        paragraph_text(blocks)
-
-    if block_type == BlockType.heading:
-        heading_text(blocks)
-
-    if block_type == BlockType.code:
-        code_text(blocks)
-
-    if block_type == BlockType.quote:
-        quote_text(blocks)
-
-    if block_type == BlockType.unordered_list:
-        unordered_list_text(blocks)
-
-    if block_type == BlockType.ordered_list:
-        ordered_list_text(blocks)
-
+    blocks = markdown_to_blocks(markdown) # ['This is', '-This is list\n-yo']
     
-    def paragraph_text(blocks_list):
-        pass
+    parent = ParentNode("div",[],None)
+    for block in blocks:
+        block_type = block_to_block_type(block) # type of block in EACH list #Example: This is paragraph!
+        block = block.replace('\n', '')
+        block = TextNode(block,TextType.NORMAL_TEXT,url=None)
+        if block_type == BlockType.paragraph:
+            text_nodes = text_to_textnodes(block)
+            children = text_to_children(text_nodes)
+            paragraph_node = ParentNode("p", children, None)
+            parent.children.append(paragraph_node)
+        
+        if block_type == BlockType.heading:
+            h_tag, text = heading_text(block)
+            text_nodes = text_to_textnodes(text)
+            children = text_to_children(text_nodes)
+            heading_node = ParentNode(f"{h_tag}", children, None)
+            parent.children.append(heading_node)
 
-    def heading_text(blocks_list):
-        pass
+        if block_type == BlockType.quote:
+            text = quote_text(block)
+            text_nodes = text_to_textnodes(text)
+            children = text_to_children(text_nodes)
+            heading_node = ParentNode("blockquote", children, None)
+            parent.children.append(heading_node)
 
-    def code_text(blocks_list):
-        pass
+        if block_type == BlockType.unordered_list:
+            text = unordered_list_text(block)
+            parent.children.append(text)
 
-    def quote_text(blocks_list):
-        pass
+        if block_type == BlockType.ordered_list:
+            text = ordered_list_text(block)
+            parent.children.append(text)
 
-    def unordered_list_text(blocks_list):
-        pass
+        if block_type == BlockType.code:
+            text = code_text(blocks)
+            pre_tag_node = ParentNode("pre", children=[text])
+            parent.children.append(pre_tag_node)
+    return parent
 
-    def ordered_list_text(blocks_list):
-        pass
+def heading_text(text):
+    count = 0
+    word = ""
+    i = 0
+    while i < len(text) and text[i] == "#":
+    # what could you do here?
+        count += 1
+        i += 1
+    word = text[count:].lstrip() # so like "#### h1" that's why count + 1
+    return f"h{count}",word
+
+def code_text(text):
+    code_node = ""
+    for word in text:
+        start = word.find("```")
+        end = word.find("```", start + 3)
+        splt_text = word[start+3:end]
+        code_node = LeafNode("code",value=splt_text)
+    return code_node
+
+def quote_text(text):
+    return text[1:].lstrip()
+
+def unordered_list_text(text):
+    text = text.split("\n")
+    parent_ul = ParentNode("ul",[],None)
+    for word in text:
+        word_strip = word[1:].lstrip()
+        text_node = text_to_textnodes(word_strip)
+        children = text_to_children(text_node)
+        unordered_node = LeafNode("li",children=children)
+        parent_ul.children.append(unordered_node)
+    return parent_ul
+
+
+def ordered_list_text(text):
+    text = text.split("\n")
+    parent_ol = ParentNode("ol",[],None)
+    for word in text:
+        dot_find = word.find(".")
+        word_strip = word[dot_find+1:].lstrip()
+        text_node = text_to_textnodes(word_strip)
+        children = text_to_children(text_node)
+        ordered_node = LeafNode("li",children=children)
+        parent_ol.children.append(ordered_node)
+    return parent_ol
+
+def text_to_children(text_node):
+    res = []
+    for node in text_node:
+        res.append(text_node_to_html_node(node))
+        print(node)
+    
+    return res
+    
+
 
 
 

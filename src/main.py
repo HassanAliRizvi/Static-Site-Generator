@@ -2,15 +2,17 @@ from textnode import *
 from split_functions import *
 
 def main():
-    md = """This is **bolded** paragraph
+    md = """
+    This is **bolded** paragraph
+    text in a p
+    tag here
 
-        This is another paragraph with _italic_ text and `code` here
-        This is the same paragraph on a new line
+    This is another paragraph with _italic_ text and `code` here
 
-        - This is a list
-        - with items
-        """
-    print(markdown_to_blocks(md))
+    """
+    node = markdown_to_html_node(md)
+    html = node.to_html()
+    print(html)
 
 
 if __name__ == "__main__":
