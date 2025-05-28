@@ -52,12 +52,14 @@ def split_nodes_image(old_nodes):
     nodes_for_image = old_nodes
     for nodes in nodes_for_image:
         #print(f"This is the node {nodes}")
+        print(f"This is nodes: {nodes}")
 
         if nodes.text_type != TextType.NORMAL_TEXT:
             res.append(nodes)
             continue
-        
         remaining_text = nodes.text
+        print(f"This is remaining_text: {remaining_text}")
+        print(f"This is nodes: {nodes}")
         
         image_extract = extract_markdown_images(remaining_text)
 
@@ -124,7 +126,7 @@ def split_nodes_link(old_nodes):
 
 #used for bold, italic, underline etc
 def text_to_textnodes(nodes):
-    nodes_list = [nodes]
+    nodes_list = [TextNode(nodes, TextType.NORMAL_TEXT)]
     nodes = split_nodes_image(nodes_list)
     nodes = split_nodes_link(nodes)
     nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC_TEXT)
@@ -213,7 +215,7 @@ def markdown_to_html_node(markdown):
     parent = ParentNode("div",[],None)
     for block in blocks:
         block_type = block_to_block_type(block) # type of block in EACH list #Example: This is paragraph!
-        block = block.replace('\n', '')
+        block = block.replace('\n', ' ')
         block = TextNode(block,TextType.NORMAL_TEXT,url=None)
         if block_type == BlockType.paragraph:
             text_nodes = text_to_textnodes(block)
@@ -253,6 +255,7 @@ def heading_text(text):
     count = 0
     word = ""
     i = 0
+    text = text.text
     while i < len(text) and text[i] == "#":
     # what could you do here?
         count += 1
