@@ -52,14 +52,13 @@ def split_nodes_image(old_nodes):
     nodes_for_image = old_nodes
     for nodes in nodes_for_image:
         #print(f"This is the node {nodes}")
-        print(f"This is nodes: {nodes}")
+        #print(f"This is nodes: {nodes}")
 
         if nodes.text_type != TextType.NORMAL_TEXT:
             res.append(nodes)
             continue
         remaining_text = nodes.text
-        print(f"This is remaining_text: {remaining_text}")
-        print(f"This is nodes: {nodes}")
+        
         
         image_extract = extract_markdown_images(remaining_text)
 
@@ -216,7 +215,7 @@ def markdown_to_html_node(markdown):
     for block in blocks:
         block_type = block_to_block_type(block) # type of block in EACH list #Example: This is paragraph!
         block = block.replace('\n', ' ')
-        block = TextNode(block,TextType.NORMAL_TEXT,url=None)
+        #block = TextNode(block,TextType.NORMAL_TEXT,url=None)
         if block_type == BlockType.paragraph:
             text_nodes = text_to_textnodes(block)
             children = text_to_children(text_nodes)
@@ -255,7 +254,7 @@ def heading_text(text):
     count = 0
     word = ""
     i = 0
-    text = text.text
+    text = text
     while i < len(text) and text[i] == "#":
     # what could you do here?
         count += 1
@@ -282,7 +281,7 @@ def unordered_list_text(text):
         word_strip = word[1:].lstrip()
         text_node = text_to_textnodes(word_strip)
         children = text_to_children(text_node)
-        unordered_node = LeafNode("li",children=children)
+        unordered_node = ParentNode("li",children=children)
         parent_ul.children.append(unordered_node)
     return parent_ul
 
@@ -295,7 +294,7 @@ def ordered_list_text(text):
         word_strip = word[dot_find+1:].lstrip()
         text_node = text_to_textnodes(word_strip)
         children = text_to_children(text_node)
-        ordered_node = LeafNode("li",children=children)
+        ordered_node = ParentNode("li",children=children)
         parent_ol.children.append(ordered_node)
     return parent_ol
 
