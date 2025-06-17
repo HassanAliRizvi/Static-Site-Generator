@@ -214,26 +214,27 @@ def markdown_to_html_node(markdown):
     parent = ParentNode("div",[],None)
     for block in blocks:
         block_type = block_to_block_type(block) # type of block in EACH list #Example: This is paragraph!
-        block = block.replace('\n', ' ')
+        
         #block = TextNode(block,TextType.NORMAL_TEXT,url=None)
         if block_type == BlockType.paragraph:
+            block = block.replace('\n', ' ')
             text_nodes = text_to_textnodes(block)
             children = text_to_children(text_nodes)
-            paragraph_node = ParentNode("p", children, None)
+            paragraph_node = ParentNode("p", children=children)
             parent.children.append(paragraph_node)
         
         if block_type == BlockType.heading:
             h_tag, text = heading_text(block)
             text_nodes = text_to_textnodes(text)
             children = text_to_children(text_nodes)
-            heading_node = ParentNode(f"{h_tag}", children, None)
+            heading_node = ParentNode(f"{h_tag}", children=children)
             parent.children.append(heading_node)
 
         if block_type == BlockType.quote:
             text = quote_text(block)
             text_nodes = text_to_textnodes(text)
             children = text_to_children(text_nodes)
-            heading_node = ParentNode("blockquote", children, None)
+            heading_node = ParentNode("blockquote", children=children)
             parent.children.append(heading_node)
 
         if block_type == BlockType.unordered_list:
@@ -245,7 +246,7 @@ def markdown_to_html_node(markdown):
             parent.children.append(text)
 
         if block_type == BlockType.code:
-            text = code_text(blocks)
+            text = code_text(block)
             pre_tag_node = ParentNode("pre", children=[text])
             parent.children.append(pre_tag_node)
     return parent
@@ -264,19 +265,29 @@ def heading_text(text):
 
 def code_text(text):
     code_node = ""
+    text = text.split("\n")
+    print(text)
+    code_counter = 0
+    res = ""
     for word in text:
-        start = word.find("```")
-        end = word.find("```", start + 3)
-        splt_text = word[start+3:end]
-        code_node = LeafNode("code",value=splt_text)
-    return code_node
+        if word == "```":
+            code_counter += 1
+        if 0 < code_counter < 2 and word != "```":
+            res += word + "\n"
+        if code_counter == 2:
+            code_node = LeafNode(tag="code",value=res)
+            return code_node
 
 def quote_text(text):
-    return text[1:].lstrip()
+    text = text.split("\n")
+    res = []
+    for word in text:
+        res.append(word[1:].lstrip())
+    return "\n".join(res)
 
 def unordered_list_text(text):
     text = text.split("\n")
-    parent_ul = ParentNode("ul",[],None)
+    parent_ul = ParentNode("ul",children=[])
     for word in text:
         word_strip = word[1:].lstrip()
         text_node = text_to_textnodes(word_strip)
