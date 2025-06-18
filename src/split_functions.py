@@ -14,7 +14,7 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
         # This is a **code block** word
         if node.text_type == TextType.NORMAL_TEXT:
             start = node_text.find(delimiter)
-            end =  node_text.find(delimiter, start + len(delimiter))
+            end =  node_text.find(delimiter, start + len(delimiter)-1)
             if start == -1:
                 # No delimiter found, add the original node
                 res.append(node)
