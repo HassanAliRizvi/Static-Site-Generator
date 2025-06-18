@@ -217,7 +217,7 @@ def markdown_to_html_node(markdown):
         
         #block = TextNode(block,TextType.NORMAL_TEXT,url=None)
         if block_type == BlockType.paragraph:
-            block = block.replace('\n', ' ')
+            block = block.replace('\n', '')
             text_nodes = text_to_textnodes(block)
             children = text_to_children(text_nodes)
             paragraph_node = ParentNode("p", children=children)
