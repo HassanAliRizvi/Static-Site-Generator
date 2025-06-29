@@ -6,6 +6,8 @@ import re
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     res = []
+    if old_nodes == "":
+        return res
     for node in old_nodes:
         node_text = node.text
         
@@ -24,16 +26,19 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             else:
                 start_word = node_text[0:start]
                 start_word_node = TextNode(start_word, TextType.NORMAL_TEXT)
-                res.append(start_word_node) 
+                if start_word:
+                    res.append(TextNode(start_word, TextType.NORMAL_TEXT)) 
 
                 delimiter_word = node_text[start + len(delimiter):end]
-
-                delim_res = TextNode(delimiter_word, text_type)
-                res.append(delim_res)  
+                if delimiter_word:
+                    res.append(TextNode(delimiter_word, text_type))
                 
                 end_word = node_text[end+len(delimiter):]
                 end_word_node = TextNode(end_word, TextType.NORMAL_TEXT)
-                res.append(end_word_node)
+                print("end word node below......")
+                print(end_word_node)
+                if end_word:
+                    res.extend(split_nodes_delimiter([TextNode(end_word, TextType.NORMAL_TEXT)], delimiter, TextType.NORMAL_TEXT))
 
     return res
 
@@ -270,7 +275,7 @@ def code_text(text):
     code_counter = 0
     res = ""
     for word in text:
-        if word == "```":
+        if word == "```" or word == "`":
             code_counter += 1
         if 0 < code_counter < 2 and word != "```":
             res += word + "\n"

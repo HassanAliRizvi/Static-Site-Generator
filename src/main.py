@@ -23,15 +23,10 @@ def file_transfer(source_dir, dest_dir):
     copy_contents(source_dir,dest_dir)
 
 def main():
-    md = """
-```
-This is text that _should_ remain
-the **same** even with inline stuff
-```
-"""
-    node = markdown_to_html_node(md)
-    html = node.to_html()
-    print(html)
+    
+    #node = markdown_to_html_node(md)
+    #html = node.to_html()
+    #print(html)
     source_dir = "static"
     dest_dir = "public"
     file_transfer(source_dir, dest_dir)

@@ -42,7 +42,6 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, con
         subdir_path = os.path.join(dir_path_content, dir)
         if os.path.isdir(subdir_path):
             generate_pages_recursive(subdir_path, template_path, dest_dir_path, content_root)
-        
         else:
             if os.path.splitext(subdir_path)[1] == ".md":
                 from_path_content = " "
